@@ -1,0 +1,110 @@
+create database library_management;
+
+use library_management;
+
+create table Books (Book_id int primary key, 
+Title varchar(50) not null, 
+Author varchar(50), 
+Genre varchar(50), 
+Publication_year int, 
+Available enum('Yes','No')
+);
+
+desc Books;
+
+create table Members (Menber_id int primary key,
+Name varchar(50) not null,
+Email varchar(50),
+Phone varchar(12) unique 
+);
+
+desc Members;
+
+create table Transactions (Transaction_id int primary key, 
+Book_id int,
+Menber_id int,
+Borrow_Date date,
+Return_date date,
+constraint fk_Book_id foreign key(Book_id)
+references Books(Book_id),
+constraint fk_Menber_id foreign key(Menber_id)
+references Members(Menber_id)
+);
+
+desc Transactions;
+
+INSERT INTO Books (Book_id, Title, Author, Genre, Publication_year, Available) VALUES
+(1,'To Kill a Mockingbird', 'Harper Lee', 'Fiction', 1960, 'Yes'),
+(2,'1984', 'George Orwell', 'Fiction', 1949, 'Yes'),
+(3,'The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 1925, 'Yes'),
+(4,'Pride and Prejudice', 'Jane Austen', 'Fiction', 1813, 'Yes'),
+(5,'To the Lighthouse', 'Virginia Woolf', 'Fiction', 1927, 'Yes'),
+(6,'Brave New World', 'Aldous Huxley', 'Fiction', 1932, 'Yes'),
+(7,'The Catcher in the Rye', 'J.D. Salinger', 'Fiction', 1951, 'Yes'),
+(8,'Moby-Dick', 'Herman Melville', 'Fiction', 1851, 'Yes'),
+(9,'The Lord of the Rings', 'J.R.R. Tolkien', 'Fantasy', 1954, 'Yes'),
+(10,'Harry Potter and the Philosopher''s Stone', 'J.K. Rowling', 'Fantasy', 1997, 'Yes');
+
+select*from Books;
+
+insert into Members (Menber_id, Name, Email, Phone) VALUES
+(1,'John Smith', 'john@example.com', '1234567890'),
+(2,'Alice Johnson', 'alice@example.com', '9876543210'),
+(3,'Michael Brown', 'michael@example.com', '5551234567'),
+(4,'Emily Davis', 'emily@example.com', '4445556666'),
+(5,'Daniel Taylor', 'daniel@example.com', '7778889999');
+
+select*from Members;
+
+INSERT INTO Transactions (Transaction_id, Book_id, Menber_id, Borrow_Date, Return_date) VALUES
+(1,1, 1, '2023-01-10', '2023-01-20'),
+(2,2, 3, '2023-02-05', '2023-02-15'),
+(3,3, 2, '2023-03-15', NULL),
+(4,4, 4, '2023-04-20', '2023-05-10'),
+(5,5, 1, '2023-05-05', NULL),
+(6,6, 2, '2023-06-10', NULL),
+(7,7, 5, '2023-07-15', '2023-07-25'),
+(8,8, 3, '2023-08-20', '2023-09-05'),
+(9,9, 4, '2023-09-10', NULL);
+
+select*from Transactions;
+
+alter table Members rename column Menber_id to Member_id;
+
+-- How many books are there in the library
+SELECT COUNT(*) AS total_books FROM Books;
+
+-- How many members are registered with the library
+SELECT COUNT(*) AS total_members FROM Members;
+
+-- Which member has borrowed the most books
+SELECT Menber_id, COUNT(*) AS num_borrowed_books 
+FROM Transactions 
+GROUP BY Menber_id 
+ORDER BY num_borrowed_books DESC;
+
+-- how many books are currently available in the library
+SELECT COUNT(*) AS available_books 
+FROM Books 
+WHERE Book_id NOT IN (SELECT Book_id FROM Transactions WHERE Return_date IS NULL);
+
+-- all books borrowed by a specific member
+SELECT * FROM Transactions WHERE Menber_id = 1;
+
+-- all transactions for a specific book
+SELECT * FROM Transactions WHERE Book_id = 3;
+
+-- all books that are currently borrowed
+SELECT * FROM Transactions WHERE Return_date IS NULL;
+
+-- all books that are not returned yet
+SELECT * FROM Transactions WHERE Return_date IS NULL;
+
+-- number of books borrowed by each member
+SELECT Menber_id, COUNT(*) AS num_borrowed_books FROM Transactions GROUP BY Menber_id;
+
+--  titles of books borrowed by a specific member
+SELECT Books.Title 
+FROM Transactions 
+JOIN Books ON Transactions.Book_id = Books.Book_id 
+WHERE Menber_id = 2;
